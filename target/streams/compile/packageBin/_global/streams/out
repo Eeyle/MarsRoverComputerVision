@@ -1,1 +1,11 @@
-[0m[[0m[0mdebug[0m] [0m[0mJar uptodate: /home/eeyle/DSI/Capstone/target/scala-2.11/capstone_2.11-0.1.jar[0m
+[0m[[0m[0mdebug[0m] [0m[0mPackaging /home/eeyle/DSI/Capstone/target/scala-2.11/capstone_2.11-0.1.jar ...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Capstone$$anonfun$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/eeyle/DSI/Capstone/target/scala-2.11/classes/Capstone$$anonfun$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Capstone$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/eeyle/DSI/Capstone/target/scala-2.11/classes/Capstone$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Capstone$$anonfun$2.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/eeyle/DSI/Capstone/target/scala-2.11/classes/Capstone$$anonfun$2.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Capstone.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/eeyle/DSI/Capstone/target/scala-2.11/classes/Capstone.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mDone packaging.[0m
