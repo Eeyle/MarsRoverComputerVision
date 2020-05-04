@@ -1,0 +1,1 @@
+["sbt.Task[scala.collection.immutable.Map[java.lang.String, scala.collection.Seq[scala.Tuple2[java.nio.file.Path, sbt.nio.FileStamp]]]]",{"2.11.12":{"hashes":[["/home/eeyle/DSI/Capstone/src/main/scala/Capstone.scala","7b5a4d6ab620672a0ed68941a4437706053f2f89"]],"lastModifiedTimes":[]}}]
