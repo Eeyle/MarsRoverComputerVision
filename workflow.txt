@@ -1,3 +1,4 @@
+http://localhost:8080/
 start master
 ~/spark-2.4.5-bin-hadoop2.7/sbin/start-master.sh
 start worker
@@ -7,7 +8,7 @@ https://spark.apache.org/docs/latest/spark-standalone.html
  -> be sure to stop-master.sh and stop-worker.sh as well
 
 submit application
-~/spark-2.4.5-bin-hadoop2.7/bin/spark-submit --class Capstone --master spark://ee:7077 target/scala-2.11/capstone_2.11-0.1.jar 100
+~/spark-2.4.5-bin-hadoop2.7/bin/spark-submit --class Capstone --master spark://ee:7077 target/scala-2.11/capstone_2.11-0.1.jar 10
 doc
 http://spark.apache.org/docs/latest/submitting-applications.html
 

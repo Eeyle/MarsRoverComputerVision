@@ -19,7 +19,13 @@
 
 import scala.math.random
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SparkSession, SQLContext}
+
+import org.apache.spark.ml.classification.LogisticRegression
+import org.apache.spark.ml.evaluation.{BinaryClassificationEvaluator, MulticlassClassificationEvaluator}
+import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler, OneHotEncoderEstimator}
+import org.apache.spark.ml.Pipeline
+import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 
 /** Computes an approximation to pi */
 object Capstone {
@@ -28,18 +34,81 @@ object Capstone {
       .builder
       .appName("Capstone")
       .config("spark.master", "spark://ee:7077")
+      // debug configurations that I'm scared to delete
+      //.config("spark.sql.autoBroadcastJoinThreshold", -1)
+      //.config("spark.executor.memory", "6g")
+      //.config("spark.sql.broadcastTimeout", 30000)//3000)
+      //.config("spark.task.maxDirectResultSize", "6g")
       .getOrCreate()
     
-    val slices = if (args.length > 0) args(0).toInt else 2
-    val n = math.min(100000L * slices, Int.MaxValue).toInt // avoid overflow
-    val count = spark.sparkContext.parallelize(1 until n, slices).map { i =>
-      val x = random * 2 - 1
-      val y = random * 2 - 1
-      if (x*x + y*y <= 1) 1 else 0
-    }.reduce(_ + _)
-    println(s"Pi is roughly ${4.0 * count / (n - 1)}")
+    // ---
+    // Reading data
+    var df = spark.sqlContext
+		.read.format("csv") 
+		.option("header", true)
+		.option("inferSchema", true)
+		.load("data/Heart.csv")
     
+    // Indexing data
+    var labelIndexer = new StringIndexer()
+		.setInputCol("AHD")
+		.setOutputCol("label")
+	var chestPainIndexer = new StringIndexer()
+		.setInputCol("ChestPain")
+		.setOutputCol("ChestPainIndexed")
+	var thalIndexer = new StringIndexer()
+		.setInputCol("Thal")
+		.setOutputCol("ThalIndexed")
+	var ohc = new OneHotEncoderEstimator()
+		.setInputCols(Array(chestPainIndexer.getOutputCol, thalIndexer.getOutputCol))
+		.setOutputCols(Array("ChestPainVec", "ThalVec"))
+	
+	// Assembling features	
+	var features = Array.concat(
+		df.columns.slice(1, df.columns.length - 1),
+		ohc.getOutputCols
+	)
+	features = features filter {x => x != chestPainIndexer.getInputCol && x != thalIndexer.getInputCol}
+	var assembler = new VectorAssembler()
+		.setInputCols(features)
+		.setOutputCol("features")
+	
+	// Initializing model
+	var Array(train, test) = df randomSplit (Array(0.8, 0.2), 42)
+	var lr = new LogisticRegression()
+	var evaluator = new MulticlassClassificationEvaluator()
+  		.setMetricName("accuracy")
+  	
+  	// Pipeline setup
+  	var pipe = new Pipeline()
+		.setStages(Array(
+			labelIndexer,
+			chestPainIndexer,
+			thalIndexer,
+			ohc,
+			assembler,
+			lr
+		))
+	
+	var paramGrid = new ParamGridBuilder()
+		.addGrid(lr.elasticNetParam, Array(0.1, 0.25))
+		.addGrid(lr.regParam, Array(0.1, 0.25))
+		.build()
+	
+	var cv = new CrossValidator()
+		.setEstimator(pipe)
+		.setEstimatorParamMaps(paramGrid)
+		.setEvaluator(evaluator)
+	
+	// Modeling
+	var cvModel = cv fit train
+	var predictions = cvModel transform test
+	println(s"Evaluation ${evaluator evaluate predictions}")
+	println(cvModel getEstimatorParamMaps (cvModel.avgMetrics indexOf (cvModel.avgMetrics max)))
+	
+    // ---
     spark.stop()
   }
 }
-// scalastyle:on println
+
+
