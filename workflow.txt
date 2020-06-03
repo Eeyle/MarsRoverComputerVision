@@ -3,12 +3,14 @@ start master
 ~/spark-2.4.5-bin-hadoop2.7/sbin/start-master.sh
 start worker
 ~/spark-2.4.5-bin-hadoop2.7/sbin/start-slave.sh spark://ee:7077
+~/spark-2.4.5-bin-hadoop2.7/sbin/start-slave.sh spark://192.168.1.2:7077
 master and worker documentation
 https://spark.apache.org/docs/latest/spark-standalone.html
  -> be sure to stop-master.sh and stop-worker.sh as well
 
 submit application
 ~/spark-2.4.5-bin-hadoop2.7/bin/spark-submit --class Capstone --master spark://ee:7077 target/scala-2.11/capstone_2.11-0.1.jar 10
+~/spark-2.4.5-bin-hadoop2.7/bin/spark-submit --class Capstone --master spark://192.168.1.2:7077 target/scala-2.11/capstone_2.11-0.1.jar
 doc
 http://spark.apache.org/docs/latest/submitting-applications.html
 
@@ -17,3 +19,26 @@ http://spark.apache.org/examples.html
 
 to view master in browser
 http://localhost:8080/
+
+
+ssh
+ssh user@ip
+sometimes scp requires -P 22 to specify that it's port 22 - check with netstat -na | grep 22
+
+mac ssh setup
+sudo systemsetup -setremotelogin on
+
+windows ssh setup
+PowerShell as administrator
+Start-Service sshd
+ubuntu
+
+scp to windows
+"Administrator@192.168.1.n:C:/Users/Administrator/Documents/dsi"
+scp to mac
+armstrong@192.168.1.n:/Users/armstrong/Documents/dsi
+
+start mac slave
+/Users/armstrong/Documents/dsi/spark-2.4.5-bin-hadoop2.7/sbin/start-slave.sh spark://192.168.1.2:7077
+start windows slave
+/mnt/c/Users/Administrator/Documents/dsi/spark-2.4.5-bin-hadoop2.7/sbin/stop-slave.sh spark://192.168.1.2:7077

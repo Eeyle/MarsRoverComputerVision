@@ -1,0 +1,4 @@
+https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse
+https://www.windows-commandline.com/current-logged-in-user-name-command/
+
+sometimes scp requires to be set to port 22 manually -P 22 
