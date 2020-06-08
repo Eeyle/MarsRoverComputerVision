@@ -1,43 +1,26 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
-// scalastyle:off println
+import org.apache.spark.sql.{SparkSession, SQLContext} // , Column, Row};
+import org.apache.spark.sql.functions.col; // {col, udf, monotonically_increasing_id};
+import org.apache.spark.sql.types._; // the datatypes used when making a custom schema or when casting in sql selects
 
-import org.apache.spark.sql.{SparkSession, SQLContext, Column, Row};
-import org.apache.spark.sql.functions.{col, udf, monotonically_increasing_id};
-import org.apache.spark.sql.types._; // the datatypes used when making a custom schema
-
-import org.apache.spark.ml.image.ImageSchema;
-import org.apache.spark.ml.linalg.{Vector, Vectors};
-import org.apache.spark.ml.linalg.SQLDataTypes.VectorType;
+//import org.apache.spark.ml.image.ImageSchema;
+//import org.apache.spark.ml.linalg.{Vector, Vectors};
+//import org.apache.spark.ml.linalg.SQLDataTypes.VectorType; // custom spark.sql.types Type for Vector classes
 
 import org.apache.spark.ml.classification.MultilayerPerceptronClassifier;
 import org.apache.spark.ml.classification.{LinearSVC, RandomForestClassifier};
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
 
-import org.apache.spark.ml.feature.VectorAssembler;//{StringIndexer, VectorAssembler, OneHotEncoderEstimator};
+import org.apache.spark.ml.feature.VectorAssembler; 
 //import org.apache.spark.ml.Pipeline;
-// import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+//import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 
+// Scala implementation of Tensorflow API version 0.3 community-maintained
+// would have loved to implement a CNN but too many issues arose from the unfinished and community-maintained api
 //import org.platanios.tensorflow.api._;
-//import org.platanios.tensorflow.api.tf; // yeah this can be cleaned up
+//import org.platanios.tensorflow.api.tf; 
 //import org.platanios.tensorflow.api.data._;
 
-//import java.nio.ByteBuffer;
 
 object Capstone {
   def main(args: Array[String]) {
@@ -45,11 +28,88 @@ object Capstone {
       .builder
       .appName("Capstone")
       .config("spark.master", "local[*]")
-//      .config("spark.master", "spark://ee:7077")
-//      .config("spark.master", "spark://192.168.1.2:7077")
+//      .config("spark.master", "spark://ee:7077") // 
+//      .config("spark.master", "spark://192.168.1.2:7077") // IP of Spark Master
       .getOrCreate();
 
-//	import spark.implicits._; // some helpful conversions
+	// --== Loading Data ==--
+	// Image sets were converted to csv files for simple loading and distribution with Spark
+	// the final column _c4096 is the label
+	var trainImages = spark.read
+		.format("csv")
+		.option("inferSchema", true)
+		.option("header", false)
+		.load("data/processed_csv/train_images.csv")
+		.withColumn("label", col("_c4096").cast(IntegerType));
+
+	var valImages = spark.read
+		.format("csv")
+		.option("inferSchema", true)
+		.option("header", false)
+		.load("data/processed_csv/val_images.csv")
+		.withColumn("label", col("_c4096").cast(IntegerType));
+
+	var testImages = spark.read
+		.format("csv")
+		.option("inferSchema", true)
+		.option("header", false)
+		.load("data/processed_csv/test_images.csv")
+		.withColumn("label", col("_c4096").cast(IntegerType));
+
+	// Each image is 64x64 greyscale leading to 4096 features each
+	var assembler = new VectorAssembler()
+		.setInputCols(Array.range(0, 4096).map(x => s"_c$x"))
+		.setOutputCol("features");
+
+	trainImages = assembler transform trainImages;
+	valImages = assembler transform valImages;
+	testImages = assembler transform testImages;
+
+  	// --== Modeling ==--
+  	var evaluator = new MulticlassClassificationEvaluator()
+		.setMetricName("accuracy");
+
+//	// MLP NN
+//    val layers = Array[Int](4096, 1024, 16, 2); // input features, hidden layers, output classes
+//    var nn = new MultilayerPerceptronClassifier()
+//    	.setLayers(layers)
+//    	.setBlockSize(128)
+//    	.setSeed(2L)
+//    	.setMaxIter(10);
+
+	// Random Forest
+	var rf = new RandomForestClassifier()
+		.setFeatureSubsetStrategy("sqrt")
+		.setMaxDepth(16)
+		.setNumTrees(256)
+		.setSeed(2L);
+	
+//	// SVM
+//	var svc = new LinearSVC()
+//		.setMaxIter(25)
+//		.setRegParam(0.01);
+
+  	//  Modeling
+//  	var nnModel = nn fit trainImages;
+//  	var predictions = nnModel transform valImages;
+
+	var rfModel = rf fit trainImages;
+	var predictions = rfModel transform valImages;
+
+//	var svcModel = svc fit trainImages;
+//	var predictions = svcModel transform valImages;
+
+  	println(s"Evaluation ${evaluator evaluate predictions}");
+
+	println("\n-----\nDone!\n-----\n");
+    spark.stop();
+  }
+}
+
+// -- deprecated attempt --
+// /* I attempted to use Spark's built-in image loading system to load images directly from file into Spark. I was able to process the data correctly with enough effort, but the solution was clunky at best and used far too much memory. Instead, image data was processed in Python in data/processing/csv_conversion.ipynb, converting each set of images to a single csv file which is ready to be loaded by Spark. */
+//
+//	import spark.implicits._; // some helpful type conversions
 //
 //	var new_labels = spark
 //		.read
@@ -112,7 +172,7 @@ object Capstone {
 //		}
 //	)
 //
-//
+// // It was these few next line that were particularly difficult, clunky, and not robust to expansion.
 //	var asdf = images.select(
 //			binaryToShortUDF(col("value")) as "features"
 //		).withColumn("id", monotonically_increasing_id)
@@ -134,87 +194,3 @@ object Capstone {
 ////		.withColumnRenamed("thelabel", "label");
 //
 //
-
-	var trainImages = spark.read
-		.format("csv")
-		.option("inferSchema", true)
-		.option("header", false)
-		.load("data/processed_csv/train_images.csv")
-		.withColumn("label", col("_c4096").cast(IntegerType));
-
-	var valImages = spark.read
-		.format("csv")
-		.option("inferSchema", true)
-		.option("header", false)
-		.load("data/processed_csv/val_images.csv")
-		.withColumn("label", col("_c4096").cast(IntegerType));
-
-	var testImages = spark.read
-		.format("csv")
-		.option("inferSchema", true)
-		.option("header", false)
-		.load("data/processed_csv/test_images.csv")
-		.withColumn("label", col("_c4096").cast(IntegerType));
-
-
-	var assembler = new VectorAssembler()
-		.setInputCols(Array.range(0, 4096).map(x => s"_c$x"))
-		.setOutputCol("features");
-
-	trainImages = assembler transform trainImages;
-	valImages = assembler transform valImages;
-	testImages = assembler transform testImages;
-
-  	// Initializing model
-  	var evaluator = new MulticlassClassificationEvaluator()
-		.setMetricName("accuracy");
-
-//    val layers = Array[Int](4096, 1024, 16, 2); // input features, hidden layers, output classes
-//    var nn = new MultilayerPerceptronClassifier()
-//    	.setLayers(layers)
-//    	.setBlockSize(128)
-//    	.setSeed(2L)
-//    	.setMaxIter(10);
-
-//	var rf = new RandomForestClassifier()
-//		.setFeatureSubsetStrategy("sqrt")
-//		.setMaxDepth(7)
-//		.setNumTrees(128)
-//		.setSeed(2L);
-	
-	var svc = new LinearSVC()
-		.setMaxIter(25)
-		.setRegParam(0.01);
-
-  	// Modeling
-//  	var nnModel = nn fit trainImages;
-//  	var predictions = nnModel transform valImages;
-
-//	var rfModel = rf fit trainImages;
-//	var predictions = rfModel transform valImages;
-
-	var svcModel = svc fit trainImages;
-	var predictions = svcModel transform valImages;
-
-  	println(s"Evaluation ${evaluator evaluate predictions}");
-
-
-    // ---
-	println("\n-----\nDone!\n-----\n");
-
-//	trainImages show;
-
-//	asdf printSchema;
-//	asdf show;
-//	var image = (asdf takeAsList 20) get 0;
-//	println(image getClass);
-
-//	images show;
-//	var image = (images takeAsList 20) get 0;
-//	println(image);
-//	println(image get 0);
-
-
-    spark.stop();
-  }
-}

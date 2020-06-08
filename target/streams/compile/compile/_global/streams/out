@@ -1,4 +1,10 @@
-[0m[[0m[31merror[0m] [0m[0m/home/eeyle/DSI/Capstone/src/main/scala/Capstone.scala:180:12: org.apache.spark.ml.param.IntParam does not take parameters[0m
-[0m[[0m[31merror[0m] [0m[0m		.maxDepth(7)[0m
-[0m[[0m[31merror[0m] [0m[0m		         ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
+[0m[[0m[31merror[0m] [0m[0m/home/eeyle/DSI/Capstone/src/main/scala/Capstone.scala:43:43: not found: value IntegerType[0m
+[0m[[0m[31merror[0m] [0m[0m		.withColumn("label", col("_c4096").cast(IntegerType));[0m
+[0m[[0m[31merror[0m] [0m[0m		                                        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/eeyle/DSI/Capstone/src/main/scala/Capstone.scala:50:43: not found: value IntegerType[0m
+[0m[[0m[31merror[0m] [0m[0m		.withColumn("label", col("_c4096").cast(IntegerType));[0m
+[0m[[0m[31merror[0m] [0m[0m		                                        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/eeyle/DSI/Capstone/src/main/scala/Capstone.scala:57:43: not found: value IntegerType[0m
+[0m[[0m[31merror[0m] [0m[0m		.withColumn("label", col("_c4096").cast(IntegerType));[0m
+[0m[[0m[31merror[0m] [0m[0m		                                        ^[0m
+[0m[[0m[31merror[0m] [0m[0mthree errors found[0m

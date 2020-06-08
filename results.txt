@@ -10,8 +10,14 @@ RF
 	numTrees 128
 Evaluation 0.7323170731707317
 
+RF
+	featureSubsetStrategy "sqrt"
+	maxDepth 16
+	numTrees 256
+Evaluation 0.7634146341463415
 
 SVC
 	maxIter 25
 	setRegParam 0.01
 Evaluation 0.16951219512195123
+
