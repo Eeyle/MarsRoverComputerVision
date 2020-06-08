@@ -1,3 +1,6 @@
+sbt package && sbt -J-Xmx4G run
+
+
 http://localhost:8080/
 start master
 ~/spark-2.4.5-bin-hadoop2.7/sbin/start-master.sh
@@ -42,3 +45,6 @@ start mac slave
 /Users/armstrong/Documents/dsi/spark-2.4.5-bin-hadoop2.7/sbin/start-slave.sh spark://192.168.1.2:7077
 start windows slave
 /mnt/c/Users/Administrator/Documents/dsi/spark-2.4.5-bin-hadoop2.7/sbin/stop-slave.sh spark://192.168.1.2:7077
+
+
+
