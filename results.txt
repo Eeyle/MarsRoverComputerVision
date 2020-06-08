@@ -1,0 +1,17 @@
+NN 
+	layers (4096, 1024, 16, 2) 
+	blocksize 128
+	maxIter 10
+Evaluation 0.11036585365853659
+
+RF
+	featureSubsetStrategy "sqrt"
+	maxDepth 7
+	numTrees 128
+Evaluation 0.7323170731707317
+
+
+SVC
+	maxIter 25
+	setRegParam 0.01
+Evaluation 0.16951219512195123
