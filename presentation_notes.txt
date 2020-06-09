@@ -1,0 +1,22 @@
+
+NASA open data portal
+Mars Curiosity Rover -> cameras
+computer vision's specific applicability
+
+ground/horizon vs self
+labeling
+
+the csv workaround
+
+Spark's purpose
+why it's useful for image data in particular
+
+no cnn
+no kernel
+great forest
+other benefits to a forest
+
+color best accuracy improvement
+larger images for smaller parts
+augmentation leads to file problem
+file management leads to processing images in Scala
